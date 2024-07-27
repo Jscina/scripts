@@ -1,18 +1,24 @@
 #!/bin/bash
 
-# Convert ODT files to PD
 convert_odt_to_pdf() {
 	local odt_dir=$1
 	local tmp_dir=$2
 
-	find "$odt_dir" -name "*.odt" -type f -print0 | while IFS= read -r -d '' file; do
+	echo "Converting ODT files to PDF"
+
+	# Count total number of ODT files
+	total_files=$(find "$odt_dir" -name "*.odt" -type f | wc -l)
+
+	# Counter for processed files
+	local processed_files=0
+
+	find "$odt_dir" -name "*.odt" -type f -print0 | while IFS= read -r -d $'\0' file; do
 		libreoffice --headless --convert-to pdf --outdir "$tmp_dir" "$file" >/dev/null 2>&1
-		if [ $? -eq 0 ]; then
-			echo "Converted $file to PDF"
-		else
-			echo "Error converting $file to PDF"
-		fi
+		((processed_files++))
+		echo -ne "Processed files: $processed_files/$total_files\r"
 	done
+
+	echo
 }
 
 # Combine PDF files into a single PDF
@@ -26,13 +32,8 @@ combine_pdfs() {
 		sorted_pdfs+=("$REPLY")
 	done < <(find "$tmp_dir" -name "*.pdf" -print0 | sort -zV)
 
+	echo "Combining PDF files"
 	pdfunite "${sorted_pdfs[@]}" "$output_pdf"
-
-	if [ $? -eq 0 ]; then
-		echo "Output PDF: $output_pdf"
-	else
-		echo "Error combining PDFs to $output_pdf"
-	fi
 }
 
 main() {
