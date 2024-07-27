@@ -1,15 +1,18 @@
 #!/bin/bash
 
-if [ $# -gt 0 ]; then
-	echo "Usage: ./install.sh"
-	exit 1
-fi
+files=$(ls -A)
 
-$files=$(ls -A)
-
-for file in $files; do
-	if [ $file == "install.sh" || $file == "README.txt" || $file == "LICENSE"]; then
+for file in ${files[@]}; do
+	if [[ $file == "install.sh" || $file == "README.md" || $file == "LICENSE" || $file == ".gitignore" ]]; then
 		continue
+	elif [[ -d "$file" ]]; then
+		continue
+	fi
+
+	echo "Checking if $file link exists"
+	if [ -L "~/.local/bin/$file" ]; then
+		echo "Removing existing symlink ~/.local/bin/$file"
+		rm ~/.local/bin/$file
 	fi
 
 	if [ -f "$file" ]; then
