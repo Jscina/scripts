@@ -9,6 +9,11 @@ for file in ${files[@]}; do
 		continue
 	fi
 
+	if [ ! -d ~/.local/bin ]; then
+		echo "Creating ~/.local/bin"
+		mkdir -p ~/.local/bin
+	fi
+
 	echo "Checking if $file link exists"
 	if [ -L "~/.local/bin/$file" ]; then
 		echo "Removing existing symlink ~/.local/bin/$file"
