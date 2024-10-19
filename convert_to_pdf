@@ -34,6 +34,8 @@ combine_pdfs() {
 
 	echo "Combining PDF files"
 	pdfunite "${sorted_pdfs[@]}" "$output_pdf"
+	echo "Total words in the PDF: "
+	pdftotext -layout "$output_pdf" - | wc -w
 }
 
 main() {
