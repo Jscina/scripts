@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "Installing xact for Skyrim SE audio fix"
+WINEPREFIX=/home/joshs/.config/steamtinkerlaunch/vortex/compatdata/pfx/ winetricks --force xact xact_x64
