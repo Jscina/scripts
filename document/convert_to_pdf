@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 convert_odt_to_pdf() {
 	local odt_dir=$1

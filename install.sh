@@ -1,28 +1,59 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-files=$(ls -A)
+# Ensure ~/.local/bin exists
+if [ ! -d ~/.local/bin ]; then
+	echo "Creating ~/.local/bin directory"
+	mkdir -p ~/.local/bin
+fi
 
-for file in ${files[@]}; do
-	if [[ $file == "install.sh" || $file == "README.md" || $file == "LICENSE" || $file == ".gitignore" ]]; then
-		continue
-	elif [[ -d "$file" ]]; then
-		continue
+# Function to install a script
+install_script() {
+	local script_path="$1"
+	local script_name=$(basename "$script_path")
+
+	echo "Installing $script_name"
+
+	# Make script executable
+	chmod +x "$script_path"
+
+	# Check if a symlink already exists
+	if [ -L "$HOME/.local/bin/$script_name" ]; then
+		echo "Removing existing symlink ~/.local/bin/$script_name"
+		rm "$HOME/.local/bin/$script_name"
 	fi
 
-	if [ ! -d ~/.local/bin ]; then
-		echo "Creating ~/.local/bin"
-		mkdir -p ~/.local/bin
-	fi
+	# Create symlink
+	ln -s "$(pwd)/$script_path" "$HOME/.local/bin/$script_name"
+	echo "Installed $script_name successfully!"
+}
 
-	echo "Checking if $file link exists"
-	if [ -L "~/.local/bin/$file" ]; then
-		echo "Removing existing symlink ~/.local/bin/$file"
-		rm ~/.local/bin/$file
-	fi
+# Files to exclude from installation
+EXCLUDE_FILES=("install.sh" "README.md" "LICENSE" ".gitignore")
 
-	if [ -f "$file" ]; then
-		echo "Installing $file"
-		chmod +x $file
-		ln -s "$(pwd)/$file" ~/.local/bin/$file
-	fi
-done
+# Install scripts recursively from all directories
+find_and_install() {
+	local current_dir="$1"
+
+	for file in "$current_dir"/*; do
+		# Get basename for checking against exclude list
+		filename=$(basename "$file")
+
+		# Skip excluded files
+		if [[ " ${EXCLUDE_FILES[@]} " =~ " $filename " ]]; then
+			continue
+		fi
+
+		# If directory, recurse into it
+		if [ -d "$file" ]; then
+			find_and_install "$file"
+		# If file, install it
+		elif [ -f "$file" ]; then
+			install_script "$file"
+		fi
+	done
+}
+
+# Start installation from current directory
+echo "Starting installation of scripts..."
+find_and_install "."
+echo "All scripts installed successfully!"
